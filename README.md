@@ -42,7 +42,7 @@ None known.
 
 ## Support and contact details
 
-Feel free to contact [Dan Lauby] (dmlauby@gmail.com) with any questions.
+Feel free to contact [Dan Lauby](dmlauby@gmail.com) with any questions.
 
 ## Technologies Used
 

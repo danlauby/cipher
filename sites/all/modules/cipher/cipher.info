@@ -1,0 +1,5 @@
+name = Cipher
+description = Encrypt a phrase with the caesar cipher method
+package = Custom Modules
+core = 7.x
+files[] = cipher.module

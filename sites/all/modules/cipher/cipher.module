@@ -1,5 +1,6 @@
 <?php
 
+// Routing options
 function cipher_menu() {
     $items['cipher'] = [
         'title' => 'Cipher a phrase',
@@ -9,7 +10,7 @@ function cipher_menu() {
         'type' => MENU_NORMAL_ITEM,
     ];
     $items['cipher_answer_page'] = [
-        'title' => 'Your Encrypted Phrase!',
+        'title' => 'Your Encrypted Phrase',
         'page callback' => 'cipher_answer',
         'access callback' => TRUE,
         'type' => MENU_CALLBACK,
@@ -17,22 +18,23 @@ function cipher_menu() {
     return $items;
 }
 
+// Create form
 function cipher_form() {
     $form['cipher_shift_value'] = [
         '#title' => 'Enter shift value:',
         '#type' => 'textfield',
-        '#description' => 'Number of places you want to shift each letter.',
-        '#element_validate' => [],
+        '#description' => t('Number of places you want to shift each letter.'),
+        '#element_validate' => ['element_validate_integer_positive', 'letter_range'],
     ];
     $form['cipher_direction'] = [
         '#title' => 'Enter direction (left or right):',
         '#type' => 'textfield',
-        '#description' => "Will shift letters 'left' or 'right'.",
+        '#description' => t("Will shift letters 'left' or 'right'."),
     ];
     $form['cipher_phrase'] = [
         '#title' => 'Enter phrase:',
         '#type' => 'textfield',
-        '#description' => "The phrase you to encrypt.",
+        '#description' => t("The phrase you to encrypt."),
     ];
     $form['submit'] = [
         '#type' => 'submit',
@@ -41,15 +43,39 @@ function cipher_form() {
     return $form;
 }
 
+// Vaildation
+function letter_range($element) {
+    if($element['#value'] < 1 || $element['#value'] > 26){
+    form_error($element, t('The number must be between 1 and 26 (letters in the alphabet).'));
+    }
+}
+
+// Compare and submit
 function cipher_form_submit($form, &$form_state) {
     $cipher_shift_value = $form_state['values']['cipher_shift_value'];
-    $cipher_direction = $form_state['values']['cipher_direction'];
-    $cipher_phrase = $form_state['values']['cipher_phrase'];
-    $answers = [$cipher_shift_value, $cipher_direction];
-    $_SESSION['answers_output'] = $answers;
+    $cipher_direction = strtolower($form_state['values']['cipher_direction']);
+    $cipher_phrase = strtolower($form_state['values']['cipher_phrase']);
+
+    $alphabet = range('a','z');
+    $output = '';
+    $switch_key_value = array_flip($alphabet);
+    $seperate = str_split($cipher_phrase);
+    $phrase_length = count($seperate);
+
+    for($i = 0; $i < $phrase_length; $i++) {
+        if ($cipher_direction === 'right') {
+            $output .= $alphabet[($switch_key_value[$seperate[$i]] + $cipher_shift_value) % 26];
+        } if ($cipher_direction === 'left') {
+            $output .= $alphabet[($switch_key_value[$seperate[$i]] - $cipher_shift_value) % 26];
+        }
+    };
+
+    $_SESSION['answer'] = $output;
     $form_state['redirect'] = 'cipher_answer_page';
 }
 
+// Display on answer page
 function cipher_answer() {
-
+    $phrase = $_SESSION['answer'];
+    return "<h2><strong>$phrase</strong> is your new secret message!</h2>";
 }
